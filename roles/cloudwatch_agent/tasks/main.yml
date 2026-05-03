@@ -1,0 +1,57 @@
+- name: Gather OS facts
+  ansible.builtin.setup:
+    gather_subset:
+      - distribution
+      - os_family
+
+- name: Install CloudWatch Agent (Amazon Linux / RHEL)
+  ansible.builtin.yum:
+    name: amazon-cloudwatch-agent
+    state: present
+  when: ansible_facts['os_family'] in ["RedHat", "Amazon"]
+
+- name: Download CloudWatch Agent (Ubuntu / Debian)
+  ansible.builtin.get_url:
+    url: "https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb"
+    dest: /tmp/amazon-cloudwatch-agent.deb
+    mode: "0644"
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: Install CloudWatch Agent (Ubuntu / Debian)
+  ansible.builtin.apt:
+    deb: /tmp/amazon-cloudwatch-agent.deb
+    state: present
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: Ensure config directory exists
+  ansible.builtin.file:
+    path: /opt/aws/amazon-cloudwatch-agent/bin
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Copy CloudWatch Agent config
+  ansible.builtin.copy:
+    src: cloudwatch-config.json
+    dest: /opt/aws/amazon-cloudwatch-agent/bin/config.json
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Start CloudWatch Agent
+  ansible.builtin.shell: |
+    /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+    -a fetch-config \
+    -m ec2 \
+    -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json \
+    -s
+  changed_when: true
+
+- name: Verify CloudWatch Agent is running
+  ansible.builtin.shell: |
+    /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+    -a status | grep -i running
+  register: agent_status
+  changed_when: false
+  failed_when: agent_status.rc != 0

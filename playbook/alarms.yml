@@ -1,0 +1,50 @@
+- name: Create disk utilisation alarms for all EC2 instances
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    region: us-east-1
+    cw_namespace: DiskMonitoring
+    threshold: 80
+    sns_topic: "arn:aws:sns:{{ region }}:{{ aws_account_id }}:DiskAlert"
+
+  pre_tasks:
+    - name: Verify aws_account_id variable is set
+      ansible.builtin.fail:
+        msg: >
+          aws_account_id is not set. Pass it at runtime:
+          ansible-playbook playbook/alarms.yml -e "aws_account_id=111122223333"
+      when: aws_account_id is not defined
+
+  tasks:
+    - name: Get all instances with disk metrics
+      ansible.builtin.command: >
+        aws cloudwatch list-metrics
+        --namespace {{ cw_namespace }}
+        --metric-name disk_used_percent
+        --region {{ region }}
+        --query "Metrics[].Dimensions"
+        --output json
+      register: result
+      changed_when: false
+
+    - name: Create alarm for each instance and mount point
+      amazon.aws.cloudwatch_metric_alarm:
+        name: "disk-alarm-{{ item | selectattr('Name','equalto','host') | map(attribute='Value') | first }}-{{ item | selectattr('Name','equalto','path') | map(attribute='Value') | first | replace('/','root') | replace('/','_') }}"
+        region: "{{ region }}"
+        state: present
+        namespace: "{{ cw_namespace }}"
+        metric_name: disk_used_percent
+        statistic: Average
+        threshold: "{{ threshold }}"
+        comparison: GreaterThanOrEqualToThreshold
+        period: 300
+        evaluation_periods: 2
+        treat_missing_data: notBreaching
+        dimensions: "{{ item | items2dict(key_name='Name', value_name='Value') }}"
+        alarm_actions:
+          - "{{ sns_topic }}"
+        ok_actions:
+          - "{{ sns_topic }}"
+      loop: "{{ result.stdout | from_json }}"

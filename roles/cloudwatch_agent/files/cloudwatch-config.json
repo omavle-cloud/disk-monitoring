@@ -1,0 +1,33 @@
+{
+  "agent": {
+    "metrics_collection_interval": 60,
+    "run_as_user": "root"
+  },
+  "metrics": {
+    "namespace": "DiskMonitoring",
+    "append_dimensions": {
+      "InstanceId": "${aws:InstanceId}",
+      "InstanceType": "${aws:InstanceType}"
+    },
+    "metrics_collected": {
+      "disk": {
+        "measurement": [
+          "used_percent",
+          "used",
+          "total",
+          "free"
+        ],
+        "metrics_collection_interval": 60,
+        "resources": ["*"],
+        "ignore_file_system_types": [
+          "tmpfs",
+          "devtmpfs",
+          "squashfs",
+          "overlay",
+          "sysfs",
+          "proc"
+        ]
+      }
+    }
+  }
+}

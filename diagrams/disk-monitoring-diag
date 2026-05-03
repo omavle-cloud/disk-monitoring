@@ -1,0 +1,25 @@
+           +-----------------------------+
+           |     Ansible Control Node    |
+           +-------------+---------------+
+                         |
+                AssumeRole (IAM)
+                         |
+        +----------------+----------------+
+        |                                 |
++---------------+                +----------------+
+| AWS Account A |                | AWS Account B  |
++---------------+                +----------------+
+        |                                 |
+   EC2 Instances                     EC2 Instances
+        |                                 |
+  CloudWatch Agent                CloudWatch Agent
+        |                                 |
+        +-------------+-------------------+
+                      |
+               CloudWatch Metrics
+                      |
+         +------------+-------------+
+         |                          |
+   CloudWatch Alarms           Dashboards
+         |
+        SNS Notifications
