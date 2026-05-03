@@ -7,7 +7,7 @@ CloudWatch metrics, alarms, and SNS notifications.
 ---
 
 ## Architecture
-
+```
            +-----------------------------+
            |     Ansible Control Node    |
            +-------------+---------------+
@@ -33,7 +33,7 @@ CloudWatch metrics, alarms, and SNS notifications.
    CloudWatch Alarms           Dashboards
          |
         SNS Notifications
-
+```
 ---
 
 ## Prerequisites
