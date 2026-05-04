@@ -7,6 +7,7 @@ CloudWatch metrics, alarms, and SNS notifications.
 ---
 
 ## Architecture
+
 ```
            +-----------------------------+
            |     Ansible Control Node    |
@@ -34,6 +35,7 @@ CloudWatch metrics, alarms, and SNS notifications.
          |
         SNS Notifications
 ```
+
 ---
 
 ## Prerequisites
@@ -131,15 +133,84 @@ Pseudo-filesystems (`tmpfs`, `devtmpfs`, `squashfs`, `overlay`) are excluded aut
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-org/disk-monitoring.git
+git clone https://github.com/omavle-cloud/disk-monitoring.git
 cd disk-monitoring
 
-# 2. Install CloudWatch Agent on all EC2
-ansible-playbook -i inventory/aws_ec2.yml playbook/install_agent.yml --private-key ~/.ssh/your-key.pem
+# 2. Install CloudWatch Agent on all EC2 instances
+ansible-playbook -i inventory/aws_ec2.yml playbook/install_agent.yml \
+  --private-key ~/.ssh/your-key.pem
 
 # 3. Create CloudWatch alarms
-ansible-playbook -i inventory/aws_ec2.yml playbook/alarms.yml -e "aws_account_id=YOUR_ACCOUNT_ID"
+ansible-playbook -i inventory/aws_ec2.yml playbook/alarms.yml \
+  -e "aws_account_id=YOUR_ACCOUNT_ID"
 ```
+
+---
+
+## Replication
+
+The following screenshots demonstrate the solution working end-to-end
+in a real AWS environment.
+
+> **Note:** For testing purposes the alarm threshold was temporarily set
+> to 40% disk utilisation to trigger an alert without filling the disk.
+> In production the threshold is configured at 80% (warning) as defined
+> in `playbook/alarms.yml`.
+
+### EC2 Instances — us-east-1
+Three running instances in us-east-1 including the Ansible control node.
+
+![EC2 us-east-1](diagrams/EC2-useast1.png)
+
+### EC2 Instances — us-west-1
+One running instance in us-west-1 demonstrating multi-region discovery.
+
+![EC2 us-west-1](diagrams/EC2-uswest1.png)
+
+### IAM Permissions
+`AmazonSSMManagedInstanceCore` and `CloudWatchAgentServerPolicy` attached
+to the EC2 instance role — minimum permissions required for the solution.
+
+![IAM Permissions](diagrams/IAM%20permissions.png)
+
+### High Disk Usage — Terminal
+`df -hP` output showing 63% disk usage on the root mount point used
+to trigger the alarm.
+
+![High Disk on Root](diagrams/high-disk-on-root.png)
+
+### CloudWatch Metric Graph
+`disk_used_percent` metric visible in CloudWatch under the `DiskMonitoring`
+namespace after the CloudWatch Agent was installed and started.
+
+![CloudWatch Graph](diagrams/high-disk-cw-graph.png)
+
+### SNS Email Alert
+Email notification received from AWS SNS when disk usage breached the
+configured threshold — confirming the full alerting pipeline works.
+
+![Email Notification](diagrams/email-notification-high-disk.png)
+
+---
+
+## Alternative Approaches
+
+While this solution uses Ansible in line with the existing company stack,
+two alternative approaches are worth noting:
+
+- **Terraform** — can be used to provision supporting infrastructure such
+  as IAM roles, SNS topics and CloudWatch alarms as code, with state
+  management and drift detection built in. Works well alongside Ansible
+  rather than replacing it.
+
+- **AWS Systems Manager (SSM)** — has native support for installing and
+  configuring the CloudWatch Agent across a fleet of instances via Run
+  Command and Parameter Store, without needing Ansible at all. SSM Fleet
+  Manager also provides built-in VM discovery across accounts and regions.
+
+Ansible was chosen as it is already in use at the company and is the
+most natural fit for connecting to VMs and installing agents across a
+dynamic fleet.
 
 ---
 
@@ -153,6 +224,8 @@ cp inventory/account1_aws_ec2.yml.disabled inventory/account3_aws_ec2.yml
 # Edit the file — update aws_profile and bucket name
 ```
 
-2. Ensure the cross-account IAM role exists in the new account with the permissions listed in the Access Management section above.
+2. Ensure the cross-account IAM role exists in the new account with the
+permissions listed in the Access Management section above.
 
-The dynamic inventory picks up all instances in the new account automatically on the next run. No other changes are required.
+The dynamic inventory picks up all instances in the new account
+automatically on the next run. No other changes are required.
