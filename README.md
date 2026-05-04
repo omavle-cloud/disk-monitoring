@@ -213,19 +213,10 @@ automatically on the next run. No other changes are required.
 
 ## Alternative Approaches
 
-While this solution uses Ansible in line with the existing company stack,
-two alternative approaches are worth noting:
-
-- **Terraform** — can be used to provision supporting infrastructure such
-  as IAM roles, SNS topics and CloudWatch alarms as code, with state
-  management and drift detection built in. Works well alongside Ansible
-  rather than replacing it.
+While this solution uses Ansible, there are alternative approaches are worth noting:
 
 - **AWS Systems Manager (SSM)** — has native support for installing and
   configuring the CloudWatch Agent across a fleet of instances via Run
-  Command and Parameter Store, without needing Ansible at all. SSM Fleet
-  Manager also provides built-in VM discovery across accounts and regions.
+  Command and Parameter Store. SSM Fleet Manager also provides built-in EC2 
+  discovery across accounts and regions.
 
-Ansible was chosen as it is already in use at the company and is the
-most natural fit for connecting to VMs and installing agents across a
-dynamic fleet.
