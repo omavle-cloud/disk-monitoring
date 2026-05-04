@@ -211,6 +211,29 @@ automatically on the next run. No other changes are required.
 
 ---
 
+## References
+
+The following AWS documentation pages cover the specific configurations
+used in this solution:
+
+- [CloudWatch Agent Configuration for Disk Metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Agent-Configuration-File-Details.html#CloudWatch-Agent-Configuration-File-Metricssection) — `disk` block configuration including `measurement`, `resources` and `ignore_file_system_types` fields used in `cloudwatch-config.json`
+
+- [CloudWatch Agent `append_dimensions`](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Agent-Configuration-File-Details.html#CloudWatch-Agent-Configuration-File-Metricssection) — Adding `InstanceId` and `InstanceType` as dimensions to every metric
+
+- [AWS Managed Policy — CloudWatchAgentServerPolicy](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/create-iam-roles-for-cloudwatch-agent.html) — The exact IAM policy attached to EC2 instances to allow the agent to publish metrics
+
+- [AWS Managed Policy — AmazonSSMManagedInstanceCore](https://docs.aws.amazon.com/systems-manager/latest/userguide/setup-instance-permissions.html) — The exact IAM policy attached to EC2 instances to enable SSM connectivity
+
+- [CloudWatch Metric Alarm — Evaluation Periods and Treat Missing Data](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/AlarmThatSendsEmail.html#alarm-evaluation) — How `evaluation_periods` and `treat_missing_data: notBreaching` work together as configured in `alarms.yml`
+
+- [SNS Topic for CloudWatch Alarm Actions](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/US_SetupSNS.html) — Configuring `alarm_actions` and `ok_actions` to point to an SNS topic as used in `alarms.yml`
+
+- [aws_ec2 Inventory Plugin — compose and keyed_groups](https://docs.ansible.com/ansible/latest/collections/amazon/aws/aws_ec2_inventory.html#parameter-compose) — The `compose` block used in `inventory/aws_ec2.yml` to set `ansible_host` and connection variables
+
+- [STS AssumeRole for Cross-Account Access](https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html) — How the control node IAM role assumes roles in workload accounts as shown in `account1_aws_ec2.yml.disabled`
+
+---
+
 ## Alternative Approaches
 
 While this solution uses Ansible, there are alternative approaches are worth noting:
