@@ -217,6 +217,6 @@ While this solution uses Ansible, there are alternative approaches are worth not
 
 - **AWS Systems Manager (SSM)** — has native support for installing and
   configuring the CloudWatch Agent across a fleet of instances via Run
-  Command and Parameter Store. SSM Fleet Manager also provides built-in EC2 
+  Command. SSM Fleet Manager also provides built-in EC2 
   discovery across accounts and regions.
 
