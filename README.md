@@ -193,24 +193,21 @@ configured threshold — confirming the full alerting pipeline works.
 
 ---
 
-## Alternative Approaches
+## Scalability
 
-While this solution uses Ansible in line with the existing company stack,
-two alternative approaches are worth noting:
+Adding a new AWS account requires two steps:
 
-- **Terraform** — can be used to provision supporting infrastructure such
-  as IAM roles, SNS topics and CloudWatch alarms as code, with state
-  management and drift detection built in. Works well alongside Ansible
-  rather than replacing it.
+1. Copy and enable a new inventory file:
+```bash
+cp inventory/account1_aws_ec2.yml.disabled inventory/account3_aws_ec2.yml
+# Edit the file — update aws_profile and bucket name
+```
 
-- **AWS Systems Manager (SSM)** — has native support for installing and
-  configuring the CloudWatch Agent across a fleet of instances via Run
-  Command and Parameter Store, without needing Ansible at all. SSM Fleet
-  Manager also provides built-in VM discovery across accounts and regions.
+2. Ensure the cross-account IAM role exists in the new account with the
+permissions listed in the Access Management section above.
 
-Ansible was chosen as it is already in use at the company and is the
-most natural fit for connecting to VMs and installing agents across a
-dynamic fleet.
+The dynamic inventory picks up all instances in the new account
+automatically on the next run. No other changes are required.
 
 ---
 
@@ -229,3 +226,24 @@ permissions listed in the Access Management section above.
 
 The dynamic inventory picks up all instances in the new account
 automatically on the next run. No other changes are required.
+
+---
+
+## Alternative Approaches
+
+While this solution uses Ansible in line with the existing company stack,
+two alternative approaches are worth noting:
+
+- **Terraform** — can be used to provision supporting infrastructure such
+  as IAM roles, SNS topics and CloudWatch alarms as code, with state
+  management and drift detection built in. Works well alongside Ansible
+  rather than replacing it.
+
+- **AWS Systems Manager (SSM)** — has native support for installing and
+  configuring the CloudWatch Agent across a fleet of instances via Run
+  Command and Parameter Store, without needing Ansible at all. SSM Fleet
+  Manager also provides built-in VM discovery across accounts and regions.
+
+Ansible was chosen as it is already in use at the company and is the
+most natural fit for connecting to VMs and installing agents across a
+dynamic fleet.
