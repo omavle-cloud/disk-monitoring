@@ -211,24 +211,6 @@ automatically on the next run. No other changes are required.
 
 ---
 
-## Scalability
-
-Adding a new AWS account requires two steps:
-
-1. Copy and enable a new inventory file:
-```bash
-cp inventory/account1_aws_ec2.yml.disabled inventory/account3_aws_ec2.yml
-# Edit the file — update aws_profile and bucket name
-```
-
-2. Ensure the cross-account IAM role exists in the new account with the
-permissions listed in the Access Management section above.
-
-The dynamic inventory picks up all instances in the new account
-automatically on the next run. No other changes are required.
-
----
-
 ## Alternative Approaches
 
 While this solution uses Ansible in line with the existing company stack,
