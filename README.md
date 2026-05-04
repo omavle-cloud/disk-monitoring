@@ -171,7 +171,7 @@ One running instance in us-west-1 demonstrating multi-region discovery.
 `AmazonSSMManagedInstanceCore` and `CloudWatchAgentServerPolicy` attached
 to the EC2 instance role — minimum permissions required for the solution.
 
-![IAM Permissions](diagrams/IAM%20permissions.png)
+![IAM Permissions](diagrams/IAM-permissions.png)
 
 ### High Disk Usage — Terminal
 `df -hP` output showing 63% disk usage on the root mount point used
